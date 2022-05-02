@@ -1,7 +1,7 @@
 name:                jsonl
 version:             0.1.0.0
 synopsis:            JSON Lines
-description:         Encode collections of objects that have a ToJSON instance into the JSONL format (https://jsonlines.org/)
+description:         Parse and serialize the JSONL format (https://jsonlines.org/) via @aeson@'s ToJSON/FromJSON
 homepage:            https://github.com/unfoldml/jsonl
 license:             BSD3
 license-file:        LICENSE

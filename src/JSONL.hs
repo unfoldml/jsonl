@@ -1,19 +1,35 @@
+{-# LANGUAGE RankNTypes #-}
 {-# language DeriveGeneric #-}
 {-# language OverloadedStrings #-}
 -- | JSON Lines https://jsonlines.org/
-module JSONL (jsonlWriteFile, jsonlToLBS, jsonlBuilder) where
+module JSONL (
+  -- * Encode
+  jsonlWriteFile, jsonlToLBS, jsonlBuilder
+  -- * Decode
+ , jsonlFromLBS
+  ) where
 
 import System.IO (Handle, IOMode(..), withBinaryFile)
 
 -- aeson
-import Data.Aeson (ToJSON(..), encode )
+import Data.Aeson (ToJSON(..), FromJSON(..), encode, eitherDecode' )
 -- bytestring
 import qualified Data.ByteString.Builder as BBS (toLazyByteString, Builder, lazyByteString, string7)
 import qualified Data.ByteString.Builder.Internal as BBS (hPut, putBuilder)
-import qualified Data.ByteString.Lazy as LBS (ByteString)
+import qualified Data.ByteString.Internal as BS (c2w)
+import qualified Data.ByteString.Lazy as LBS (ByteString, span)
 
 import Prelude hiding (writeFile)
 
+
+-- | Parse a JSONL-encoded bytestring from a `LBS.ByteString`
+jsonlFromLBS :: FromJSON a => LBS.ByteString -> [Either String a]
+jsonlFromLBS = go mempty
+  where
+    go :: FromJSON a => [Either String a] -> LBS.ByteString -> [Either String a]
+    go acc lbs = let
+      (s, srest) = LBS.span (== BS.c2w '\n') lbs
+      in go (eitherDecode' s : acc) srest
 
 -- | Write a collection of objects to a JSONL-encoded file
 jsonlWriteFile :: (Foldable t, ToJSON a) => FilePath -> t a -> IO ()
