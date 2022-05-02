@@ -21,15 +21,31 @@ import qualified Data.ByteString.Lazy as LBS (ByteString, span)
 
 import Prelude hiding (writeFile)
 
+jsonlFromLBS :: FromJSON a => LBS.ByteString -> Either String [a]
+jsonlFromLBS = sequence . jsonlFromLBS_
 
 -- | Parse a JSONL-encoded bytestring from a `LBS.ByteString`
-jsonlFromLBS :: FromJSON a => LBS.ByteString -> [Either String a]
-jsonlFromLBS = go mempty
+jsonlFromLBS_ :: FromJSON a => LBS.ByteString -> [Either String a]
+jsonlFromLBS_ = go mempty
   where
     go :: FromJSON a => [Either String a] -> LBS.ByteString -> [Either String a]
     go acc lbs = let
       (s, srest) = LBS.span (== BS.c2w '\n') lbs
       in go (eitherDecode' s : acc) srest
+
+
+-- jsonlFromLBS' :: FromJSON a => LBS.ByteString -> Either String [a]
+-- jsonlFromLBS' = chop1 (Right mempty)
+
+-- chop1 :: FromJSON a =>
+--          Either String [a] -> LBS.ByteString -> Either String [a]
+-- chop1 acce lbs = case acce of
+--   Right acc -> case eitherDecode' s of
+--     Right x -> chop1 (Right (x : acc)) srest
+--     Left e -> Left e
+--   ex -> ex
+--   where
+--     (s, srest) = LBS.span (== BS.c2w '\n') lbs
 
 -- | Write a collection of objects to a JSONL-encoded file
 jsonlWriteFile :: (Foldable t, ToJSON a) => FilePath -> t a -> IO ()
