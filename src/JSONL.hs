@@ -22,6 +22,8 @@ import qualified Data.ByteString.Lazy as LBS (ByteString, span)
 import Prelude hiding (writeFile)
 
 -- | Parse a JSONL-encoded collection of objects from a `LBS.ByteString`
+--
+-- If parsing fails, returns the first parsing error in a Left
 jsonlFromLBS :: FromJSON a => LBS.ByteString -> Either String [a]
 jsonlFromLBS = sequence . jsonlFromLBS_
 
