@@ -4,7 +4,9 @@
 -- | JSON Lines https://jsonlines.org/
 module JSONL (
   -- * Encode
-  jsonlWriteFile, jsonlToLBS, jsonlBuilder
+  jsonlWriteFile, jsonlToLBS
+  , jsonlBuilder
+  , jsonLine
   -- * Decode
  , jsonlFromLBS
   ) where
@@ -36,19 +38,6 @@ jsonlFromLBS_ = go mempty
       in go (eitherDecode' s : acc) srest
 
 
--- jsonlFromLBS' :: FromJSON a => LBS.ByteString -> Either String [a]
--- jsonlFromLBS' = chop1 (Right mempty)
-
--- chop1 :: FromJSON a =>
---          Either String [a] -> LBS.ByteString -> Either String [a]
--- chop1 acce lbs = case acce of
---   Right acc -> case eitherDecode' s of
---     Right x -> chop1 (Right (x : acc)) srest
---     Left e -> Left e
---   ex -> ex
---   where
---     (s, srest) = LBS.span (== BS.c2w '\n') lbs
-
 -- | Write a collection of objects to a JSONL-encoded file
 jsonlWriteFile :: (Foldable t, ToJSON a) => FilePath -> t a -> IO ()
 jsonlWriteFile fpath xs = writeFile fpath (jsonlBuilder xs)
@@ -60,6 +49,9 @@ jsonlToLBS xs = BBS.toLazyByteString $ jsonlBuilder xs
 jsonlBuilder :: (Foldable t, ToJSON a) => t a -> BBS.Builder
 jsonlBuilder = foldMap jsonLine
 
+-- | Render a single JSONL line (together with its newline)
+--
+-- @since 0.2
 jsonLine :: ToJSON a => a -> BBS.Builder
 jsonLine x = jsonToBuilder x <> BBS.string7 "\n"
 

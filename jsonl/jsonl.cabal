@@ -1,5 +1,5 @@
 name:                jsonl
-version:             0.1.0.0
+version:             0.2.0.0
 synopsis:            JSON Lines
 description:         Parse and serialize the JSONL format via @aeson@'s ToJSON/FromJSON
 homepage:            https://github.com/unfoldml/jsonl
@@ -12,7 +12,7 @@ category:            JSON, Web, Text
 build-type:          Simple
 extra-source-files:  README.md
 cabal-version:       >=1.10
-tested-with:         GHC == 7.10.2
+tested-with:         GHC == 9.0.2
 
 library
   default-language:    Haskell2010
