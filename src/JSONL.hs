@@ -21,10 +21,10 @@ import qualified Data.ByteString.Lazy as LBS (ByteString, span)
 
 import Prelude hiding (writeFile)
 
+-- | Parse a JSONL-encoded collection of objects from a `LBS.ByteString`
 jsonlFromLBS :: FromJSON a => LBS.ByteString -> Either String [a]
 jsonlFromLBS = sequence . jsonlFromLBS_
 
--- | Parse a JSONL-encoded bytestring from a `LBS.ByteString`
 jsonlFromLBS_ :: FromJSON a => LBS.ByteString -> [Either String a]
 jsonlFromLBS_ = go mempty
   where
