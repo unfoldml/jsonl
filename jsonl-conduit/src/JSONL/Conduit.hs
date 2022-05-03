@@ -5,6 +5,7 @@ module JSONL.Conduit (
   jsonToLBSC
   -- ** I/O
   , sinkFileC
+  , appendFileC
   -- * Decode
   , jsonFromLBSC
   -- ** I/O
@@ -14,6 +15,7 @@ module JSONL.Conduit (
 import Data.Void (Void)
 
 import Control.Monad.IO.Class (MonadIO(..))
+import System.IO (IOMode(..), Handle, openBinaryFile)
 
   -- aeson
 import Data.Aeson (ToJSON(..), FromJSON(..), eitherDecode' )
@@ -24,7 +26,7 @@ import qualified Data.ByteString.Internal as BS (c2w)
 import qualified Data.ByteString.Char8 as BS8 (span, drop, putStrLn, putStr)
 import qualified Data.ByteString.Lazy as LBS (ByteString, drop, span, toStrict, fromStrict)
 -- conduit
-import qualified Conduit as C (ConduitT, runConduit, sourceFile, sinkFile, await, yield, mapC, unfoldC, foldMapC, foldlC, printC)
+import qualified Conduit as C (ConduitT, runConduit, sourceFile, sinkFile, await, yield, mapC, unfoldC, foldMapC, foldlC, printC, sinkIOHandle)
 import Conduit ( (.|) , MonadResource)
 -- jsonl
 import JSONL (jsonLine)
@@ -41,8 +43,21 @@ jsonToBuilderC = C.foldMapC jsonLine
 sinkFileC :: (ToJSON a, MonadResource m) =>
              FilePath -- ^ path of JSONL file to be created
           -> C.ConduitT a o m ()
-sinkFileC fpath = C.mapC (LBS.toStrict . BBS.toLazyByteString . jsonLine) .|
+sinkFileC fpath = C.mapC encodeJSONL .|
                   C.sinkFile fpath
+
+-- | Like `sinkFileC` but in `AppendMode`, which means that the handle is positioned at the
+-- end of the file.
+--
+-- @since 0.1.1
+appendFileC :: (ToJSON a, MonadResource m) =>
+               FilePath
+            -> C.ConduitT a o m ()
+appendFileC fpath = C.mapC encodeJSONL .|
+                    C.sinkIOHandle (openBinaryFile fpath AppendMode)
+
+encodeJSONL :: ToJSON a => a -> BS.ByteString
+encodeJSONL = LBS.toStrict . BBS.toLazyByteString . jsonLine
 
 -- | Read a JSONL file and stream the decoded records
 --
