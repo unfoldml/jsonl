@@ -27,8 +27,9 @@ spec =
   describe "JSONL.Conduit" $ do
     it "encodes a list of JSONL records" $ do
       datsC `shouldBe` datsLBS
-    -- it "reads a JSONL file and decodes its contents" $ do
-    --   sourceFileC "records"
+    it "reads a JSONL file and decodes its contents" $ do
+      rs <- readRecords
+      rs `shouldBe` dats
 
 data Record = R String String Int Bool deriving (Eq, Show, Generic)
 instance A.ToJSON Record
@@ -44,8 +45,7 @@ datsLBS :: LBS.ByteString
 datsLBS = "[\"Gilbert\",\"2013\",24,true]\n[\"Alexa\",\"2013\",29,true]\n[\"May\",\"2012B\",14,false]\n[\"Deloise\",\"2012A\",19,true]\n"
 
 
-
---
+-- data asset
 
 readRecords :: IO [Record]
 readRecords = C.runConduitRes $ sourceFileC "records" .| C.sinkList
