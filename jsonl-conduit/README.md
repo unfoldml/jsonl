@@ -1,5 +1,3 @@
 # jsonl-conduit
 
-[![Build Status](https://travis-ci.org/unfoldml/jsonl-conduit.png)](https://travis-ci.org/unfoldml/jsonl-conduit)
-
-TODO Description.
+Streaming interface to JSONL data based on `conduit`.
