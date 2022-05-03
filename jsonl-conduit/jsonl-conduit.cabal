@@ -18,7 +18,7 @@ library
   default-language:    Haskell2010
   ghc-options:         -Wall
   hs-source-dirs:      src
-  exposed-modules:     Lib
+  exposed-modules:     JSONL.Conduit
   build-depends:       base >= 4.7 && < 5
                      , aeson
                      , bytestring
@@ -33,16 +33,19 @@ library
 --   build-depends:       base
 --                      , jsonl-conduit
 
--- test-suite spec
---   default-language:    Haskell2010
---   ghc-options:         -Wall
---   type:                exitcode-stdio-1.0
---   hs-source-dirs:      test
---   main-is:             Spec.hs
---   build-depends:       base
---                      , jsonl-conduit
---                      , hspec
---                      , QuickCheck
+test-suite spec
+  default-language:    Haskell2010
+  ghc-options:         -Wall
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Spec.hs
+  build-depends:       base
+                     , aeson
+                     , bytestring
+                     , conduit
+                     , jsonl-conduit
+                     , hspec
+
 
 source-repository head
   type:     git

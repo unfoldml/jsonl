@@ -6,3 +6,7 @@ packages:
 
 extra-deps:
   - jsonl-0.2.0.0@sha256:35f8a3816f0b93830008709a8e64c0c69b9bc632a92c54b3be3345bfccba4a5c,1465
+
+# flags:
+#   conduit:
+#     Wno-unused-imports: true
