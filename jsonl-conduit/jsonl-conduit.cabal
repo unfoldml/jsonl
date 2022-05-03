@@ -1,5 +1,5 @@
 name:                jsonl-conduit
-version:             0.1.0.0
+version:             0.1.0.1
 synopsis:            Conduit interface to JSONL-encoded data
 description:         Streaming interface to JSONL-encoded files and bytestrings
 homepage:            https://github.com/unfoldml/jsonl-conduit
@@ -26,7 +26,7 @@ library
                      , conduit
                      , jsonl >= 0.2
                      -- debug
-                     , hspec
+                     -- , hspec
 
 test-suite spec
   default-language:    Haskell2010
