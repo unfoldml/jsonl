@@ -20,7 +20,7 @@ import Conduit ( (.|) , MonadResource)
 -- hspec
 import Test.Hspec (Spec, describe, it, shouldBe)
 
-import JSONL.Conduit (jsonToLBSC, jsonFromLBSC)
+import JSONL.Conduit (jsonToLBSC, jsonFromLBSC, sourceFileC, sinkFileC)
 
 spec :: Spec
 spec =

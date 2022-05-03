@@ -24,6 +24,8 @@ library
                      , bytestring
                      , conduit
                      , jsonl >= 0.2
+                     -- debug
+                     , hspec
 
 -- executable jsonl-conduit
 --   default-language:    Haskell2010
