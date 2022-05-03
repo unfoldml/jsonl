@@ -12,7 +12,7 @@ module JSONL.Conduit (
 
 import Data.Void (Void)
 
-
+import Control.Monad.IO.Class (MonadIO(..))
 
   -- aeson
 import Data.Aeson (ToJSON(..), FromJSON(..), eitherDecode' )
@@ -20,10 +20,10 @@ import Data.Aeson (ToJSON(..), FromJSON(..), eitherDecode' )
 import qualified Data.ByteString as BS (ByteString)
 import qualified Data.ByteString.Builder as BBS (toLazyByteString, Builder)
 import qualified Data.ByteString.Internal as BS (c2w)
-import qualified Data.ByteString.Char8 as BS8 (span)
+import qualified Data.ByteString.Char8 as BS8 (span, putStrLn, putStr)
 import qualified Data.ByteString.Lazy as LBS (ByteString, span, toStrict, fromStrict)
 -- conduit
-import qualified Conduit as C (ConduitT, runConduit, sourceFile, sinkFile, await, yield, mapC, unfoldC, foldMapC, foldlC)
+import qualified Conduit as C (ConduitT, runConduit, sourceFile, sinkFile, await, yield, mapC, unfoldC, foldMapC, foldlC, printC)
 import Conduit ( (.|) , MonadResource)
 -- jsonl
 import JSONL (jsonLine)
@@ -39,18 +39,18 @@ jsonToBuilderC = C.foldMapC jsonLine
 -- | Render a stream of JSON-encodable objects into a JSONL file
 sinkFileC :: (ToJSON a, MonadResource m) =>
              FilePath -- ^ path of JSONL file to be created
-          -> C.ConduitT a () m ()
+          -> C.ConduitT a o m ()
 sinkFileC fpath = C.mapC (LBS.toStrict . BBS.toLazyByteString . jsonLine) .|
                   C.sinkFile fpath
 
 -- | Read a JSONL file and stream the decoded records
 sourceFileC :: (MonadResource m, FromJSON a) =>
                FilePath -- ^ path of JSONL file to be read
-            -> C.ConduitT Void a m ()
+            -> C.ConduitT () a m ()
 sourceFileC fpath = C.sourceFile fpath .|
                     parseChunk
 
-parseChunk :: (Monad m, FromJSON a) => C.ConduitT BS.ByteString a m ()
+parseChunk :: (MonadIO m, FromJSON a) => C.ConduitT BS.ByteString a m ()
 parseChunk = go mempty
   where
     go acc = do
@@ -59,10 +59,13 @@ parseChunk = go mempty
         Nothing -> pure ()
         Just x -> do
           let
-            acc' = x <> acc
+            acc' = acc <> x
             (s, srest) = BS8.span (== '\n') acc'
+          liftIO $ BS8.putStrLn s
           case eitherDecode' $ LBS.fromStrict s of
-            Left _ -> pure ()
+            Left e -> do
+              error e
+              pure ()
             Right y -> do
               C.yield y
               go srest

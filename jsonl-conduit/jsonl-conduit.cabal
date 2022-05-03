@@ -1,7 +1,7 @@
 name:                jsonl-conduit
 version:             0.1.0.0
--- synopsis:
--- description:
+synopsis:            Conduit interface to JSONL-encoded data
+description:         Streaming interface to JSONL-encoded files and bytestrings
 homepage:            https://github.com/unfoldml/jsonl-conduit
 license:             BSD3
 license-file:        LICENSE
@@ -11,6 +11,7 @@ copyright:           (c) 2022 UnfoldML AB, Marco Zocca
 category:            JSON, Web, Text
 build-type:          Simple
 extra-source-files:  README.md
+                     records
 cabal-version:       >=1.10
 tested-with:         GHC == 9.0.2
 
@@ -26,14 +27,6 @@ library
                      , jsonl >= 0.2
                      -- debug
                      , hspec
-
--- executable jsonl-conduit
---   default-language:    Haskell2010
---   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
---   hs-source-dirs:      app
---   main-is:             Main.hs
---   build-depends:       base
---                      , jsonl-conduit
 
 test-suite spec
   default-language:    Haskell2010
