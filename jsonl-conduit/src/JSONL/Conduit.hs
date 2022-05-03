@@ -1,5 +1,8 @@
 {-# LANGUAGE TupleSections #-}
 {-# options_ghc -Wno-unused-imports #-}
+-- | Streaming interface for JSONL-encoded files, based on @conduit@
+--
+-- The JSONL (JSON Lines) format : https://jsonlines.org/
 module JSONL.Conduit (
   -- * Encode
   jsonToLBSC
