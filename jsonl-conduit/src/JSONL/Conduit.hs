@@ -45,6 +45,8 @@ sinkFileC fpath = C.mapC (LBS.toStrict . BBS.toLazyByteString . jsonLine) .|
                   C.sinkFile fpath
 
 -- | Read a JSONL file and stream the decoded records
+--
+-- NB : ignores any parsing errors and returns 
 sourceFileC :: (MonadResource m, FromJSON a) =>
                FilePath -- ^ path of JSONL file to be read
             -> C.ConduitT () a m ()
