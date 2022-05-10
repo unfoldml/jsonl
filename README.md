@@ -4,7 +4,7 @@ Adapters between 'aeson' and the JSONL format (https://jsonlines.org/)
 
 jsonl : <a href="https://hackage.haskell.org/package/jsonl"><img src="https://img.shields.io/hackage/v/jsonl.svg"></a>
 
-jsonl-conduit : 
+jsonl-conduit : <a href="https://hackage.haskell.org/package/jsonl-conduit"><img src="https://img.shields.io/hackage/v/jsonl-conduit.svg"></a>
 
 The JSONL format is best suited for encoding datasets made of structured objects, safer to parse than CSV and a lighter-weight alternative to a document database.
 
