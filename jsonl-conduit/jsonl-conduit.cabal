@@ -1,5 +1,5 @@
 name:                jsonl-conduit
-version:             0.1.1
+version:             0.1.3
 synopsis:            Conduit interface to JSONL-encoded data
 description:         Streaming interface to JSONL-encoded files and bytestrings
 homepage:            https://github.com/unfoldml/jsonl
@@ -11,6 +11,7 @@ copyright:           (c) 2022 UnfoldML AB, Marco Zocca
 category:            JSON, Web, Text
 build-type:          Simple
 extra-source-files:  README.md
+                     CHANGELOG.md
                      records
 cabal-version:       >=1.10
 tested-with:         GHC == 9.0.2
@@ -34,6 +35,7 @@ test-suite spec
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
+  other-modules:       JSONL.ConduitSpec
   build-depends:       base
                      , aeson
                      , bytestring
