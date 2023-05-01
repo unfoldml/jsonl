@@ -14,6 +14,7 @@ module JSONL.Conduit (
   , jsonFromLBSCE
   -- ** I/O
   , sourceFileC
+  , sourceFileCLen
   , sourceFileCE
   -- * Tokenize only
   , sourceFileC_
@@ -30,7 +31,7 @@ import Data.Aeson (ToJSON(..), FromJSON(..), eitherDecode' )
 import qualified Data.ByteString as BS (ByteString, null)
 import qualified Data.ByteString.Builder as BBS (toLazyByteString, Builder)
 import qualified Data.ByteString.Internal as BS (c2w)
-import qualified Data.ByteString.Char8 as BS8 (span, drop, putStrLn, putStr)
+import qualified Data.ByteString.Char8 as BS8 (span, drop, length, putStrLn, putStr)
 import qualified Data.ByteString.Lazy as LBS (ByteString, null, drop, span, toStrict, fromStrict)
 -- conduit
 import qualified Conduit as C (ConduitT, runConduit, sourceFile, sinkFile, await, yield, mapC, unfoldC, foldMapC, foldlC, printC, sinkIOHandle)
@@ -91,6 +92,35 @@ parseChunk = go mempty
         case mc of
           Nothing -> pure ()
           Just x -> progress (acc <> x)
+
+-- | Like 'sourceFileC' but streams out the length in characters of the bytestring from which the JSON object was decoded (including the terminating newline), in addition to the object itself
+--
+-- This can be handy for later memory mapping into the JSONL file
+sourceFileCLen :: (MonadResource m, FromJSON a) =>
+                  FilePath -- ^ path of JSONL file to be read
+               -> C.ConduitT () (a, Int) m ()
+sourceFileCLen fpath = C.sourceFile fpath .|
+                       parseChunkLen
+
+parseChunkLen :: (Monad m, FromJSON a) => C.ConduitT BS.ByteString (a, Int) m ()
+parseChunkLen = go mempty
+  where
+    progress acc = case chopDecodeLen acc of
+                     Left _ -> pure ()
+                     Right (y, l, srest) -> do
+                       C.yield (y, l)
+                       go srest
+    go acc =
+      if not (BS.null acc) -- buffer is non empty
+      then progress acc
+      else do
+        mc <- C.await -- get data from upstream
+        case mc of
+          Nothing -> pure ()
+          Just x -> progress (acc <> x)
+
+
+
 
 -- | Read a JSONL file and stream the decoded records
 --
@@ -163,6 +193,11 @@ chopDecode acc = (, srest) <$> eitherDecode' (LBS.fromStrict s)
   where
     (s, srest) = chopBS8 acc
 
+chopDecodeLen :: FromJSON a =>
+                 BS.ByteString -> Either String (a, Int, BS.ByteString)
+chopDecodeLen acc = (, l, srest) <$> eitherDecode' (LBS.fromStrict s)
+  where
+    (s, l, srest) = chopBS8Len acc
 
 
 -- | Source a `LBS.ByteString` for JSONL records
@@ -193,10 +228,24 @@ jsonFromLBSCE = C.unfoldC mk
 
 -- * utilities
 
+
+
 -- | 'span' for a strict bytestring encoding a JSONL record
-chopBS8 :: BS.ByteString -> (BS.ByteString, BS.ByteString)
-chopBS8 lbs = (s, BS8.drop 1 srest)
-  where (s, srest) = BS8.span (/= '\n') lbs
+chopBS8 :: BS.ByteString
+        -> (BS.ByteString, BS.ByteString) -- ^ (chars without newline, rest of string)
+chopBS8 bs = (s, srest)
+  where
+    (s, _, srest) = chopBS8Len bs
+
+chopBS8Len :: BS.ByteString
+           -> (BS.ByteString, Int, BS.ByteString) -- ^ (chars without newline, length /including/ newline, rest of string)
+chopBS8Len bs = (s, l, BS8.drop 1 srest)
+  where
+    (s, srest) = BS8.span (/= '\n') bs
+    l = BS8.length s + 1 -- length in characters of the JSONL object, including newline
+
+-- chopBS8 lbs = (s, BS8.drop 1 srest)
+--   where (s, srest) = BS8.span (/= '\n') lbs
 
 -- | 'span' for a lazy bytestring encoding a JSONL record
 chopLBS :: LBS.ByteString -> (LBS.ByteString, LBS.ByteString)
